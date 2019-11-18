@@ -208,4 +208,12 @@ class World:
         ## it will throw an error.
         return True
 
+    def Tile_At(self, x, y):
+        if x < 0 or y < 0:
+            return None
+        try:
+            return self.current_map[y][x]
+        except IndexError:
+            return None
+
 

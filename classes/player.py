@@ -76,7 +76,7 @@ class Player:
 
     def attack(self):
         best_weapon = self.most_powerful_weapon()
-        room = world.tile_at(self.x, self.y)
+        room = self.world.Tile_At(self.x, self.y)
         enemy = room.enemy
         print("You use {} against {}!".format(best_weapon.name, enemy.name))
         enemy.hp -= best_weapon.damage
@@ -86,5 +86,5 @@ class Player:
             print("{} HP is {}.".format(enemy.name, enemy.hp))
 
     def trade(self):
-        room = world.tile_at(self.x, self.y)
+        room = self.world.Tile_At(self.x, self.y)
         room.check_if_trade(self)
