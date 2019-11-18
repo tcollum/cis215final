@@ -1,0 +1,12 @@
+[information]
+map_name = Strange Planet
+map_intro = After surviving the crash landing, you wake up on a strange planet...
+next_level = -1
+
+[layout]
+design =
+    |EN|EN|VT|EN|EN|
+    |EN|  |  |  |EN|
+    |EN|FG|TT|  |TT|
+    |TT|  |ST|FG|EN|
+    |FG|  |EN|  |FG|

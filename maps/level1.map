@@ -1,0 +1,12 @@
+[information]
+map_name = The Void
+map_intro = You have managed to escape a catastrophic space craft explosion by jumping on the nearest escape pod.
+next_level = 2
+
+[layout]
+design =
+    |EN|EN|NL|EN|EN|
+    |EN|  |  |  |EN|
+    |EN|FI|ET|  |  |
+    |  |  |ST|  |EN|
+    |FI|  |EN|  |FI|
