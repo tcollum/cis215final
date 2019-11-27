@@ -32,23 +32,46 @@ class RustySword(Weapon):
         self.value = 100
 
 
-class Consumable:
+class Ingestable:
+    """Ingestable class will raise a NotImplementedError if Ingestable has not
+       been previously created.
+
+       Ingestable class will return both the name of the Ingestable and the
+       healing value of the Ingestable.
+
+       All instances of the Ingestable class have a value which is used when
+       being purchased from the HiLineVendingMachine or the AlienTrader.
+
+       All instances of the Ingestable class can be used to trade with the
+       AlienTrader."""
+    
     def __init__(self):
-        raise NotImplementedError("Do not create raw Consumable objects.")
+        raise NotImplementedError("Do not create raw ingestable objects.")
 
     def __str__(self):
         return "{} (+{} HP)".format(self.name, self.healing_value)
 
+class DayOldFrenchBaguette(Ingestable):
+    def __init_(self):
+        self.name = "Day Old French Baguette"
+        self.healing_value = 8
+        self.value = 14
 
-class CrustyBread(Consumable):
+class RumAndCoke(Ingestable):
     def __init__(self):
-        self.name = "Crusty Bread"
-        self.healing_value = 10
-        self.value = 12
+        self.name = "Rum and Coke"
+        self.healing_value = 25
+        self.value = 30
 
-
-class HealingPotion(Consumable):
+class FourPackOfRedBull(Ingestable):
     def __init__(self):
-        self.name = "Healing Potion"
-        self.healing_value = 50
-        self.value = 60
+        self.name = "Four Pack of Red Bull"
+        self.healing_value = 35
+        self.value = 40
+
+class BottleOfAspirin(Ingestable):
+    def __init__(self):
+        self.name = "Bottle of Aspirin"
+        self.healing_value = 65
+        self.value = 75
+
