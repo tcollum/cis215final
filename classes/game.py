@@ -3,7 +3,6 @@ from classes.player import Player
 from collections import OrderedDict
 
 import os
-import configparser
 
 world = World()
 
@@ -40,12 +39,18 @@ class Game:
 
     def Play_Game(self):
         player = Player(world) # instantiate new player by giving it the loaded world model so it has all the map information.
+
         while player.is_alive() and self.game_active:
-            room = world.Tile_At(player.x, player.y)
+            room = world.Tile_At(player.x, player.y) # Get current tile / room
             print(room.intro_text())
             room.modify_player(player)
+
             if player.is_alive() and self.game_active:
+                if room != world.Tile_At(player.x, player.y): # On NL, room was not being updated to fix this, we check to see if there are any updates.
+                    room = world.Tile_At(player.x, player.y)
+
                 self.choose_action(room, player)
+
             elif not player.is_alive():
                 print("%s has died! Game Over." % self.name)
 
@@ -62,6 +67,9 @@ class Game:
 
     def get_available_actions(self, room, player):
         actions = OrderedDict()
+
+        print("ROOM %s " % room)
+
         print("Choose an action: ")
         if player.inventory:
             self.action_adder(actions, 'i', player.print_inventory, "Print inventory")

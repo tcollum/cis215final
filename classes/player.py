@@ -3,6 +3,7 @@ import classes.items as items
 class Player:
     def __init__(self, World):
         self.world = World
+
         self.inventory = [items.Rock(),
                           items.Dagger(),
                           items.CrustyBread()]
