@@ -227,7 +227,7 @@ class World:
         ## it will throw an error.
         return True
 
-    def Tile_At(self, x, y):
+    def tile_at(self, x, y):
         if x < 0 or y < 0:
             return None
 

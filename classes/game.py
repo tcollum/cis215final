@@ -41,13 +41,13 @@ class Game:
         player = Player(world) # instantiate new player by giving it the loaded world model so it has all the map information.
 
         while player.is_alive() and self.game_active:
-            room = world.Tile_At(player.x, player.y) # Get current tile / room
+            room = world.tile_at(player.x, player.y) # Get current tile / room
             print(room.intro_text())
             room.modify_player(player)
 
             if player.is_alive() and self.game_active:
-                if room != world.Tile_At(player.x, player.y): # On NL, room was not being updated to fix this, we check to see if there are any updates.
-                    room = world.Tile_At(player.x, player.y)
+                if room != world.tile_at(player.x, player.y): # On NL, room was not being updated to fix this, we check to see if there are any updates.
+                    room = world.tile_at(player.x, player.y)
 
                 self.choose_action(room, player)
 
