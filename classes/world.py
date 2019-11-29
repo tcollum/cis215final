@@ -94,9 +94,10 @@ class EnemyTile(MapTile):
 
 class EndGameTile(MapTile):
     def modify_player(self, player):
-        player.victory = True
+        player.world.game_active = False
 
     def intro_text(self):
+        # Disable game_active
         return """
         Congratulations! You have beaten the game!
         """
@@ -130,7 +131,22 @@ class FindItem(MapTile):
 
 class NextLevel(MapTile):
     """ Go to next Level -> Code functionality to pull information from World Class"""
-    pass
+    def __init__(self, x, y):
+        super().__init__(x, y)
+
+    def intro_text(self, *args):
+        if len(args) > 0:
+            return args[0]
+        else:
+            return """ """
+
+    def modify_player(self, player):
+        player.world.Load_Map("level" + player.world.map_information['next_level'])
+
+        player.x = player.world.start_tile_location[0]
+        player.y = player.world.start_tile_location[1]
+
+        print(player.world.current_map)
 
 class EventTile(MapTile):
     """ Event Tile -> Use random function to throw special events """
@@ -157,19 +173,21 @@ class World:
         "EG": EndGameTile,
         "EN": EnemyTile,
         "ET": EventTile,
-        "NL": NextLevel, # Still have to code this
         "ST": StartTile,
         "FI": FindItem,
+        "NL": NextLevel,
         "  ": None,
     }
 
     def Load_Map(self, map_name):
         """ Load map functionality into a list """
+        self.current_map.clear()
 
         config = configparser.ConfigParser()
         config.read(self.available_maps[map_name])  # reads .map file
 
-        if not self.Verify_Map(config['information'], config.get('layout', 'design')):  # pass parameters -> [information] section and the map design
+        self.map_information = config['information']
+        if not self.Verify_Map(self.map_information, config.get('layout', 'design')):  # pass parameters -> [information] section and the map design
             raise SyntaxError("[ERROR] - Invalid map configuration on map \"%s\"" % map_name)
 
         map_lines = [i for i in config.get('layout', 'design').splitlines() if i]  # Checks for valid map lines / strips white spaces.
@@ -180,16 +198,17 @@ class World:
             map_tile = [t for t in map_tile if t]  # removes unnecessary white spaces, adds to list.
             for x, map_tile in enumerate(map_tile):
                 tile_type = self.tile_types[map_tile]
+
                 if tile_type == StartTile:
                     self.start_tile_location = x, y
+
                 row.append(tile_type(x, y) if tile_type else None)
             self.current_map.append(row)
-
 
     def Verify_Map(self, map_information, map_data):
         if int(map_information['next_level']) > -1:   # map has a next level
             pass
-        elif ((map_data.count("|VT|") == 1) and (int(map_information['next_level']) == -1)): # Game ends
+        elif (map_data.count("|EG|") == 1) and (int(map_information['next_level']) == -1): # Game ends
             pass
         else:   # there was an error in the map configuration file...
             raise SyntaxError("[ERROR] - Invalid map configuration. Please see map configuration notes.")
@@ -208,9 +227,10 @@ class World:
         ## it will throw an error.
         return True
 
-    def Tile_At(self, x, y):
+    def tile_at(self, x, y):
         if x < 0 or y < 0:
             return None
+
         try:
             return self.current_map[y][x]
         except IndexError:
