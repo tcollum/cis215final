@@ -1,12 +1,12 @@
 [information]
-map_name = Strange Planet
-map_intro = After surviving the crash landing, you wake up on a strange planet...
+name = Strange Planet
+intro = After surviving the crash landing, you wake up on a strange planet...
 next_level = 1
 
 [layout]
 design =
     |  |  |EG|  |  |
-    |  |EG|EN|NL|  |
-    |  |  |EN|  |  |
+    |  |EG|FG|NL|  |
+    |  |  |FG|  |  |
     |  |  |ST|  |  |
     |  |  |  |  |  |

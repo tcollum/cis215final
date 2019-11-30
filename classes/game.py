@@ -42,13 +42,14 @@ class Game:
 
         while player.is_alive() and self.game_active:
             room = world.tile_at(player.x, player.y) # Get current tile / room
-            print(room.intro_text())
+
             room.modify_player(player)
 
             if player.is_alive() and self.game_active:
                 if room != world.tile_at(player.x, player.y): # On NL, room was not being updated to fix this, we check to see if there are any updates.
                     room = world.tile_at(player.x, player.y)
 
+                print(room.intro_text())
                 self.choose_action(room, player)
 
             elif not player.is_alive():
@@ -60,6 +61,7 @@ class Game:
             available_actions = self.get_available_actions(room, player)
             action_input = input("Action: ")
             action = available_actions.get(action_input)
+            print("")
             if action:
                 action()
             else:
@@ -67,22 +69,19 @@ class Game:
 
     def get_available_actions(self, room, player):
         actions = OrderedDict()
-
-        print("ROOM %s " % room)
-
         print("Choose an action: ")
         if player.inventory:
             self.action_adder(actions, 'i', player.print_inventory, "Print inventory")
         if isinstance(room, EnemyTile) and room.enemy.is_alive():
             self.action_adder(actions, 'a', player.attack, "Attack")
         else:
-            if world.Tile_At(room.x, room.y - 1):
+            if world.tile_at(room.x, room.y - 1):
                 self.action_adder(actions, 'n', player.move_north, "Go north")
-            if world.Tile_At(room.x, room.y + 1):
+            if world.tile_at(room.x, room.y + 1):
                 self.action_adder(actions, 's', player.move_south, "Go south")
-            if world.Tile_At(room.x + 1, room.y):
+            if world.tile_at(room.x + 1, room.y):
                 self.action_adder(actions, 'e', player.move_east, "Go east")
-            if world.Tile_At(room.x - 1, room.y):
+            if world.tile_at(room.x - 1, room.y):
                 self.action_adder(actions, 'w', player.move_west, "Go west")
         if player.hp < 100:
             self.action_adder(actions, 'h', player.heal, "Heal")

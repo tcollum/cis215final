@@ -40,9 +40,24 @@ class MapTile:
     def __init__(self, x, y):
         self.x = x
         self.y = y
+        self.map_intro = None
+        self.map_name = None
 
+    @property
     def intro_text(self):
-        raise NotImplementedError("Create a subclass instead!")
+        return self.map_intro
+
+    @intro_text.setter
+    def intro_text(self, text):
+        self.map_intro = text
+
+    @property
+    def level_name(self):
+        return self.map_name
+
+    @level_name.setter
+    def level_name(self, name):
+        self.map_name = name
 
     def modify_player(self, player):
         pass
@@ -50,9 +65,7 @@ class MapTile:
 
 class StartTile(MapTile):
     def intro_text(self):
-        return """
-        INSERT INTRO TEXT HERE
-        """
+        return MapTile.intro_text
 
 class EnemyTile(MapTile):
     def __init__(self, x, y):
@@ -134,19 +147,20 @@ class NextLevel(MapTile):
     def __init__(self, x, y):
         super().__init__(x, y)
 
-    def intro_text(self, *args):
-        if len(args) > 0:
-            return args[0]
-        else:
-            return """ """
-
     def modify_player(self, player):
         player.world.Load_Map("level" + player.world.map_information['next_level'])
 
         player.x = player.world.start_tile_location[0]
         player.y = player.world.start_tile_location[1]
 
-        print(player.world.current_map)
+        MapTile.intro_text = player.world.map_information['intro']
+        MapTile.level_name = player.world.map_information['name']
+
+    def intro_text(self):
+        text = """
+            You feel a small shock. Everything flashes white. Your eyes adjust; you have been teleported to %s
+            """ % MapTile.level_name
+        return text
 
 class EventTile(MapTile):
     """ Event Tile -> Use random function to throw special events """
@@ -175,6 +189,7 @@ class World:
         "ET": EventTile,
         "ST": StartTile,
         "FI": FindItem,
+        "FG": FindGoldTile,
         "NL": NextLevel,
         "  ": None,
     }
