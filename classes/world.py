@@ -67,6 +67,10 @@ class StartTile(MapTile):
     def intro_text(self):
         return MapTile.intro_text
 
+    def modify_player(self, player):
+        MapTile.level_name = player.world.map_information['name']
+        MapTile.intro_text = player.world.map_information['intro']
+
 class EnemyTile(MapTile):
     def __init__(self, x, y):
         r = random.random()
@@ -247,6 +251,7 @@ class World:
             return None
 
         try:
+
             return self.current_map[y][x]
         except IndexError:
             return None

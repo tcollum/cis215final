@@ -42,12 +42,15 @@ class Game:
 
         while player.is_alive() and self.game_active:
             room = world.tile_at(player.x, player.y) # Get current tile / room
-
             room.modify_player(player)
 
             if player.is_alive() and self.game_active:
                 if room != world.tile_at(player.x, player.y): # On NL, room was not being updated to fix this, we check to see if there are any updates.
                     room = world.tile_at(player.x, player.y)
+
+                room_strip = str(world.tile_at(player.x, player.y)).split()[0].strip('<')
+                if room_strip == "classes.world.StartTile":
+                    print(room.level_name)
 
                 print(room.intro_text())
                 self.choose_action(room, player)
