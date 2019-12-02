@@ -14,6 +14,10 @@ class Game:
 
 
     def New_Game(self):
+        """
+        Initialize a new game.
+        - Chadwick
+        """
         self.name = input("What is your characters name: ")
         self.Start_Game("level1")
 
@@ -21,12 +25,20 @@ class Game:
         # instantiate inventory class
 
     def Start_Game(self, map_name):
+        """
+        Starts a playable game
+        - Chadwick
+        """
         world.Scan_Maps() # Scan maps directory to populate maps list.
         world.Load_Map(map_name) # Will have to move this to somewhere else...
         self.game_active = True # Very last line
 
 
     def Save_Game(self):
+        """
+         Saves game to a configuration file in order to load.
+        Current Status: Not working.
+        """
         if os.path.isfile(""):
             user_input = input("Would you like to overwrite the previous save file? [y/n]")
 
@@ -38,6 +50,10 @@ class Game:
                 print("Nothing saved...")
 
     def Play_Game(self):
+        """
+        Plays current game!
+        original by Philip Johnson, modifications by Chadwick.
+        """
         player = Player(world) # instantiate new player by giving it the loaded world model so it has all the map information.
 
         while player.is_alive() and self.game_active:
@@ -48,7 +64,7 @@ class Game:
                 if room != world.tile_at(player.x, player.y): # On NL, room was not being updated to fix this, we check to see if there are any updates.
                     room = world.tile_at(player.x, player.y)
 
-                room_strip = str(world.tile_at(player.x, player.y)).split()[0].strip('<')
+                room_strip = str(world.tile_at(player.x, player.y)).split()[0].strip('<')  # checks current tile player is on, strips away unnecessary information.
                 if room_strip == "classes.world.StartTile":
                     print(room.level_name)
 
@@ -59,6 +75,8 @@ class Game:
                 print("%s has died! Game Over." % self.name)
 
     def choose_action(self, room, player):
+        """ Choose an available action to modify player."""
+
         action = None
         while not action:
             available_actions = self.get_available_actions(room, player)
@@ -71,6 +89,8 @@ class Game:
                 print("Invalid action!")
 
     def get_available_actions(self, room, player):
+        """ Scans tiles around the player and provides available actions. """
+
         actions = OrderedDict()
         print("Choose an action: ")
         if player.inventory:

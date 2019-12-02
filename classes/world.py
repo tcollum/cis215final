@@ -193,6 +193,10 @@ class SpecialRoom(MapTile):
                return player.credit 
          
 class EndGameTile(MapTile):
+    """
+     Player lands on |EG| Tile, ends the game
+    Current Status: Not working.
+    """
     def modify_player(self, player):
         player.world.game_active = False
 
@@ -329,7 +333,13 @@ class FindItem(MapTile):
                   format(self.findItem.value, player.credit))
    
 class NextLevel(MapTile):
-    """ Go to next Level -> Code functionality to pull information from World Class"""
+    """
+    When the player lands on a |NL| Tile, this functionality will pull the map configuration
+    "next_level" parameters, load the next level into memory, then reset player actions.
+    This is also passed back into the Play_Game function in game.py.
+
+    - Chadwick
+    """
     def __init__(self, x, y):
         super().__init__(x, y)
 
@@ -348,11 +358,15 @@ class NextLevel(MapTile):
             """ % MapTile.level_name
         return text
 
-class EventTile(MapTile):
-    """ Event Tile -> Use random function to throw special events """
-    pass
-
 class World:
+    """
+    The World class handles map processing;
+    * Scanning Map Directory
+    * Loading Maps
+    * Providing map configuration settings
+    * Map validation
+    * Tile Location
+    """
     def __init__(self):
         self.maps_directory = os.getcwd() + "/maps/"
         self.available_maps = dict()
@@ -362,7 +376,10 @@ class World:
         self.start_tile_location = None
 
     def Scan_Maps(self):
-        """ Scan map directory for .map files, load into a dictionary, key = maps_name (i.e: level1) """
+        """
+        Scan map directory for .map files, load into a dictionary, key = maps_name (i.e: level1)
+        - Chadwick
+        """
 
         maps = glob.glob(self.maps_directory + "*.map")   # Scan /maps/ directory and collect all .map files
         map_names = [os.path.basename(scanned).strip(".map") for scanned in glob.glob(self.maps_directory + "*.map")]  # put into a list
@@ -372,7 +389,6 @@ class World:
     tile_types = {
         "EG": EndGameTile,
         "EN": EnemyTile,
-        "ET": EventTile,
         "ST": StartTile,
         "FI": FindItem,
         "FG": FindGoldTile,
@@ -381,7 +397,11 @@ class World:
     }
 
     def Load_Map(self, map_name):
-        """ Load map functionality into a list """
+        """
+        Loads given map name into self.current_map
+        Original Philip Johnson, modifications by Chadwick.
+        """
+
         self.current_map.clear()
 
         config = configparser.ConfigParser()
@@ -407,6 +427,14 @@ class World:
             self.current_map.append(row)
 
     def Verify_Map(self, map_information, map_data):
+        """
+        Verifies:
+        * Map Integrity
+        * Next Level / End Game is properly implemented.
+
+        - Original by Philip Johnson, modifications by Chadwick.
+        """
+
         if int(map_information['next_level']) > -1:   # map has a next level
             pass
         elif (map_data.count("|EG|") == 1) and (int(map_information['next_level']) == -1): # Game ends
@@ -429,6 +457,10 @@ class World:
         return True
 
     def tile_at(self, x, y):
+        """
+        Provides specific tile object by x and y coordinates
+        - Philip Johnson
+        """
         if x < 0 or y < 0:
             return None
 
