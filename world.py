@@ -32,8 +32,10 @@ import glob
 import os
 import configparser
 import random
+import pickle
 
 import classes.enemies as enemies
+import classes.boss as boss
 import classes.reward as reward
 import classes.npc as npc
 import classes.items as items
@@ -43,6 +45,7 @@ class MapTile:
     def __init__(self, x, y):
         self.x = x
         self.y = y
+        self.name = "Player"
         self.map_intro = None
         self.map_name = None
 
@@ -62,9 +65,13 @@ class MapTile:
     def level_name(self, name):
         self.map_name = name
 
-    def modify_player(self, player):
-        pass
+    @property
+    def player_name(self):
+        return self.name
 
+    @player_name.setter
+    def player_name(self, player):
+        self.name = player.name
 
 class StartTile(MapTile):
     def intro_text(self):
@@ -76,29 +83,80 @@ class StartTile(MapTile):
 
 
 class EnemyTile(MapTile):
+    """ Enemies that you will encounter throughout the game
+    - Nick
+    """
     def __init__(self, x, y):
         r = random.random()
-        if r < 0.50:
-            self.enemy = enemies.GiantSpider()
-            self.alive_text = "A giant spider jumps down from " \
-                              "its web in front of you!"
-            self.dead_text = "The corpse of a dead spider " \
-                             "rots on the ground."
-        elif r < 0.80:
-            self.enemy = enemies.Ogre()
-            self.alive_text = "An ogre is blocking your path!"
-            self.dead_text = "A dead ogre reminds you of your triumph."
+        if r < 0.20:
+            self.enemy = enemies.Parasite()
+            self.alive_text = """
+                A parasitic lifeform rushes toward you!
+            """
+
+            self.dead_text = """
+                The corpse of a Parasite lies motionless on the ground.
+                It looks rather crab-like and might be tasty if boiled and
+                served with some garlic butter, but
+                there's time to think about food later. Onward!
+                """
+        elif r < 0.60:
+            self.enemy = enemies.ParasiteZ()
+            self.alive_text = """
+                A Parasite... no, a Parasite Zombie emerges from the darkness!
+                """
+
+            self.dead_text = """
+                The Parasite has lost its grip, and
+                the form underneath is revealed to be
+                human. It seems like others have crash
+                landed here. They were either ambushed
+                or voluntarily coupled with it in a
+                desperate attempt to stay warm. Some fool probably
+                even found a sleeping one and put
+                it on like a fancy hat.
+                """
+
+        elif r < 0.70:
+            self.enemy = enemies.GhostMonkey()
+            self.alive_text = """
+                An unerving feeling shivers down your spine.
+                A Chimpanzee's Shadow materializes
+                """
+
+            self.dead_text = """
+                The Shadow disappeared from this spot,
+                although a faint scent of bananas permeates the area.
+                There's a small, abondoned space suit,
+                decades old, covered in moss nearby.
+                """
         elif r < 0.95:
-            self.enemy = enemies.BatColony()
-            self.alive_text = "You hear a squeaking noise growing louder" \
-                              "...suddenly you are lost in s swarm of bats!"
-            self.dead_text = "Dozens of dead bats are scattered on the ground."
+            self.enemy = enemies.Slime()
+            self.alive_text = """
+                You hear a slurping, goopy noise ahead.
+                ...suddenly you ambushed by a Slimy Blob!
+                """
+
+            self.dead_text = """
+                Chunks of translucent, slimy parts are scattered
+                about the area. There is a strawberry aroma
+                exuding from the chunks. But you shouldn't risk
+                eating something that could be poisonous... right?
+                """
         else:
-            self.enemy = enemies.RockMonster()
-            self.alive_text = "You've disturbed a rock monster " \
-                              "from his slumber!"
-            self.dead_text = "Defeated, the monster has reverted " \
-                             "into an ordinary rock."
+            self.enemy = enemies.SJGolem()
+            self.alive_text = """
+                A Slimy Blob attaches itself to chunks of abandoned machinery and spacecraft!
+                A Space Junk Golem forms!
+                """
+
+            self.dead_text = """
+                The unknown slimy substance has dissapated,
+                and the once monstrous form has reverted to space junk.
+                All of the equipment that merged with the
+                Blob has become sticky and unusable, like spilling soda on
+                an ancient desktop computer. Today's just not your day.
+                """
 
         super().__init__(x, y)
 
@@ -113,25 +171,71 @@ class EnemyTile(MapTile):
                   format(self.enemy.damage, player.hp))
 
 
+class BossTile(MapTile):
+    """ Handles encountering a boss enemy
+    - Nick
+    """
+    ##edited version of enemytile class, but guaranteed encounter with 1 boss- Nick
+    def __init__(self, x, y):
+        r = random.random()
+        if 0 < r < 1:
+            self.boss = boss.TrashMan()
+            self.alive_text = """
+            Suddenly, the signal rushes toward you! Out of nowhere,
+            a mass of malicious, murderous machinery
+            (say that 3 times fast!)crashes into your path.
+            Hey! It's gripping the transmitter from your ship!
+            And it seems very interested in your undelivered packages.
+            """
+
+            self.dead_text = """
+                The scrambled remains of the hulking garbage disposal
+                lays before you. What caused it to make your ship crash?
+                Why was it so insistant on leaving you stranded?
+                Why did it want your mail?
+                Do robots even get mail?
+                """
+        super().__init__(x, y)
+
+    def intro_text(self):
+        text = self.alive_text if self.boss.is_alive() else self.dead_text
+        return text
+
+    def modify_player(self, player):
+        if self.boss.is_alive():
+            player.hp = player.hp - self.boss.damage
+            print("Boss does {} damage. You have {} HP remaining.".
+                  format(self.boss.damage, player.hp))
+
 class EndGameTile(MapTile):
     """
      Player lands on |EG| Tile, ends the game
     Current Status: Not working.
     """
+
     def modify_player(self, player):
         player.world.game_active = False
 
     def intro_text(self):
         # Disable game_active
         return """
-        Congratulations! You have beaten the game!
+        You finally find the source of the electronic signal: a single working outlet
+        that a broken toaster has been plugged into. You unplug it and witness a miracle: 2 burnt halves
+        of a bagel preserved in ice pop out! 
+        You plug in your transmitter and send out a distress signal, with a nagging feeling in the back
+        of your mind that something still doesn't seem right. Wanting to kill some time, you sort through your mail
+        to get it ready before you're picked up. You notice one package that didn't catch your eye before now:
+        a small, rectangular box with gold wrapping with way too many "Urgent!" labels on it.
+        You don't remember seeing it at all before. You decide to leave it alone for now,
+        relieved that you'll finally get out of here.
+        Congratulations for beating the game! The End!
         """
-
+    ##some epilogue text-Nick
 
 class FindItem(MapTile):
     def __init__(self, x, y):
         """Creates a tile that enables the player to find an item
-           (Consumables, reward, weapon, etc.) based on a random number generator."""
+           (thingsToEat, reward, weapon, etc.) based on a random number generator."""
         self.is_found = False
         r = random.random()
 
@@ -147,6 +251,7 @@ class FindItem(MapTile):
                                 cobweb-free compared to the rest of the room. Two clear round
                                 impressions have been left in the sludge on the ground as if something
                                 or perhaps some things had once been there."""
+
         elif r < 0.45:
             self.findItem = items.SixCasesOfRedBull()
             self.found_text = """You make your way further into the dark room
@@ -192,6 +297,7 @@ class FindItem(MapTile):
                 resembles a bottle. You make a mental note
                 of this discrepancy and continue on your way.
             """
+
         else:
             self.findItem = items.TwentyChuckECheeseTokens()
             self.found_text = """
@@ -228,16 +334,18 @@ class FindItem(MapTile):
             """
         super().__init__(x, y)
 
-    def find_item_intro_text(self):
+
+    def intro_text(self):
         text = self.found_text if self.is_found else self.missing_text
         return text
 
-    def find_item_modify_player(self, player):
+
+    def modify_player(self, player):
         if not self.is_found:
             self.is_found = True
-            player.CreditTotal = player.CreditTotal + self.findItem.value
-            print("You found an item. The item you found has {} much credit value."
-                  "You now have {} in total credit.".format(self.findItem.value, player.CreditTotal))
+            player.credit = player.credit + self.findItem.value
+            print("You found an item. The item you found has {} much credit value.".
+                  format(self.findItem.value, player.credit))
 
 
 class AlienTraderTile(MapTile):
@@ -280,7 +388,7 @@ class AlienTraderTile(MapTile):
                         self.make_the_swap(seller, buyer, make_the_swap)
                     except ValueError:
                         print("Wrong choice bucko!!")
-                        
+
     def make_the_swap(self, seller, buyer, item):
         if item.value > buyer.monopoly_money:
             print("I don't have enough money.")
@@ -308,18 +416,19 @@ class AlienTraderTile(MapTile):
         if not self.item_bought:
             self.item_bought = True
             player.CreditTotal = player.CreditTotal - self.item.value
-            print("You purchased an item. The item you purchased has {} much credit value."
+            print("You have purchased an item. The item you purchased has {} much credit value."
                   "You now have {} in total credit.".format(self.item.value, player.CreditTotal))
 
 
 class HiLineVendingMachineTile(MapTile):
+ 
     """Class that makes the HiLineVendingMachineTile.
 
        Includes functions that enable the HiLineVendingMachine to make a
        sales pitch to the player and sell items to the player.
 
        -Treasure"""
-    
+
     def __init__(self, x, y):
         self.hi_line_vending_machine = npc.HiLineVendingMachine()
         self.item_bought = False
@@ -373,7 +482,7 @@ class HiLineVendingMachineTile(MapTile):
             buyer.CreditTotal = buyer.CreditTotal - item.value
             print("Thanks for using HiLine Vending. Have a nice day.")
 
-    def hi_line_vending_machine_tile_intro_text(self):
+    def intro_text(self):
         return """
         As you walk along the desolate road, you are drawn to light that
         beckons you. Thinking you must be hallucinating or seeing something
@@ -395,6 +504,108 @@ class HiLineVendingMachineTile(MapTile):
             player.CreditTotal = player.CreditTotal - self.item.value
             print("You purchased an item. The item you purchased has {} much credit value."
                   "You now have {} in total credit.".format(self.item.value, player.CreditTotal))
+
+
+
+ class SpecialRoomTile(MapTile):
+     def __init__(self, x, y):
+         """Creates rewards for the player that are chosen based on the random
+            number generator function once the player enters the special room.
+            Built into the function are found/missing text statements that will
+            populate if the reward has already been claimed if the player has
+            visited the room.
+            
+           -Treasure"""
+
+         r = random.random()
+         if r < 0.60:
+             self.reward = reward.ChuckECheeseToken()
+             self.found_text = """
+                 You found a chest of Chuck E. Cheese Tokens.
+                 You can use these to buy much needed supplies!
+                 """
+
+             self.missing_text = """
+                 An empty chest indicates someone beat you
+                 this room."""
+
+         elif r < 0.75:
+             self.reward = reward.MonopolyMoney()
+             self.found_text = """
+                 You find a Monopoly game set overflowing with
+                 Monopoly money, a Monopoly game board, and a
+                 few game pieces. Congrats on your lucky find!
+                 Use this Monopoly Money to buy supplies from
+                 the vending machine.
+                               """
+
+             self.missing_text = """
+                 You find a Monopoly game set containing a
+                 Monopoly game board and a few game pieces
+                 but all of the Monopoly money has been taken.
+                 Better luck next time."""
+
+         elif r < 0.85:
+             self.reward = reward.VisaGiftCard()
+             self.found_text = """
+                 Lucky you, you stumbled across a wallet
+                 containing a visa gift card. Use this visa
+                 gift card to stock up on supplies at your
+                 neighborhood vending machine.
+                 """
+
+             self.missing_text = """
+                 You discover a wallet with a driver's
+                 license, a photo of happy family, a Sam's
+                 club membership card, and a Blockbuster
+                 Video rental card. One slot in the wallet
+                 is missing a rather valuable card.
+                 """
+         else:
+             self.reward = reward.TwentyCasesOfRedBull()
+             self.found_text = """
+                 Upon clearing the cobwebs off a very dirty
+                 set of bookshelves you discover, much to your
+                 delight, twenty cases of Red Bull. Use these
+                 to restore your strength between battles with
+                 enemies.
+                 """
+
+             self.missing_text = """
+                 Nearing a set of bookshelves that look
+                 conspicously clean compared to the rest of
+                 the room, you find a few empty cans of Red
+                 Bull and the outline of what appears to
+                 have been a stockpile of the delicious
+                 drink. Sadly, it looks like someone beat
+                 you to whatever was stockpiled there.
+                 """
+
+   def intro_text(self):
+       text = self.found_text if self.reward.is_found() else self.missing_text
+       return text
+
+   def assigningRewardValues(self, player):
+       if self.reward.is_found():
+           if self.reward == monopoly_money:
+               self.reward.value += monopoly_money
+           elif self.reward == chuck_e_cheese_toker:
+               self.reward.value += chuck_e_cheese_token
+           elif self.reward == visa_gift_card:
+               self.reward.value += visa_gift_card
+           elif self.reward == twenty_case_red_bull:
+               self.reward.value += twenty_cases_red_bull
+           else:
+               pass
+       return self.reward.value
+
+   def modify_player(self, player):
+       if not self.reward.is_found:
+           self.reward.is_found = True
+           player.CreditTotal = player.CreditTotal + self.reward.value
+           print("Congratulations! You have found a reward worth {} in credit."
+                 "You now have {} in credit.".format(self.reward.value, player.CreditTotal))
+           return player.CreditTotal
 
 
 class NextLevel(MapTile):
@@ -422,6 +633,37 @@ class NextLevel(MapTile):
             You feel a small shock. Everything flashes white. Your eyes adjust; you have been teleported to %s
             """ % MapTile.level_name
         return text
+
+class SaveGameTile(MapTile):
+    """
+    When a player lands on the "SG" tile, the game will prompt to save.
+    - Chadwick
+    """
+    def __init__(self, x, y):
+        super().__init__(x, y)
+
+    def intro_text(self):
+        return """ 
+            Insert save game text here
+        """
+
+    def modify_player(self, player):
+        # 0 = Player name, 1 = map configuration information, 2 = current map / level, 3 = player coordinates, 4 = player inventory
+        save_data = (self.name, player.world.map_information, player.world.current_map, (str(player.x) + ',' + str(player.y)), player.inventory)
+        if os.path.isfile('gamesave.txt'):
+            ask_question = input('A previous game save exists! Would you like to overwrite? [y/n] : ').lower()
+            if ask_question == 'y':
+                self.save_file(save_data)
+            else:
+                print("Game has not been saved...")
+        else:
+            self.save_file(save_data)
+
+    def save_file(self, save_data):
+        save_game = open('gamesave.txt', 'wb')
+        pickle.dump(save_data, save_game)
+        print("Game has been saved!")
+        save_game.close()
 
 
 class World:
@@ -453,11 +695,15 @@ class World:
 
 
     tile_types = {
+        "BT": BossTile,
         "EG": EndGameTile,
         "EN": EnemyTile,
         "ST": StartTile,
         "FI": FindItem,
         "NL": NextLevel,
+        "SG": SaveGameTile,
+        "VM": HiLineVendingMachineTile,
+        #"SR": SpecialRoomTile,
         "  ": None,
     }
 
